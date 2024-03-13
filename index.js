@@ -34,7 +34,7 @@ app.get('/data', (req, res) => {
   const sqlQuery = 'SELECT * FROM test'; // Replace with your actual SQL query
   connection.query(sqlQuery, (error, results, fields) => {
     if (error) {
-      return res.status(500).send('Error in database operation');
+      return res.status(500).json({message: 'Error in database operation'});
     }
     res.json(results);
   });
@@ -50,9 +50,9 @@ app.post('/data', (req, res) => {
 
   connection.query(sqlInsert, [message], (error, results, fields) => {
     if (error) {
-      return res.status(500).send('Error inserting message into database');
+      return res.status(500).json({message: 'Error inserting message into database'});
     }
-    res.status(201).send('Message inserted successfully');
+    res.status(201).json({message: 'Message inserted successfully'});
   });
 });
 
