@@ -5,10 +5,10 @@ const port = process.env.port || 3000;
 
 // Database connection settings
 const connection = mysql.createConnection({
-  host     : 'database-1.cbc8ecmccv9z.us-east-2.rds.amazonaws.com', // Replace with your actual AWS RDS endpoint
-  user     : 'admin', // Replace with your actual RDS username
-  password : 'qwert123', // Replace with your actual RDS password
-  database : 'campusforum'  // Replace with your actual RDS database name
+  host     : process.env.host, 
+  user     : process.env.user, 
+  password : process.env.password, 
+  database : process.env.database  
 });
 
 // Connect to the database
