@@ -263,7 +263,7 @@ app.post('/login', (req, res) => {
                     });
                 } else {
                     // Update last login time to current timestamp
-                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = NOW() WHERE user_id = ?";
+                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = '2024-03-16 22:45:06' WHERE user_id = ?";
                     connection.query(updateLastLoginTimeQuery, [user.UserID], (updateError) => {
                         if (updateError) {
                             console.error("Failed to update last login time: ", updateError);
