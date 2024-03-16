@@ -253,11 +253,7 @@ app.post('/login', (req, res) => {
                 const currentTime = new Date(parseInt(currentTimestamp)).getTime();
                 const diffDays = (currentTime - lastLoginTimeMillis) / (1000 * 60 * 60 * 24);
 
-                if (diffDays > 1) {
-                    // Now that you also have the email from your query, you can send it to the client
-                    // Respond to the client that verification is required and include the email address
-                    
-
+                if (diffDays > 100) {
                     return res.json({ 
                         success: false, 
                         message: "Verification required. A code has been sent to your email.", 
