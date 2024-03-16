@@ -1,5 +1,4 @@
 require('dotenv').config({ path: './.env.local' });
-require('dotenv').config();
 const secretKey = 'yourSecretKey'; 
 
 const bodyParser = require('body-parser');
