@@ -193,7 +193,7 @@ app.post('/reVerify', (req, res) => {
             if (verification_code === verificationCode ) {
                 
                 // Fetch the user's ID using their email from the user table
-                const userQuery = "SELECT UserID FROM user WHERE email = ?";
+                const userQuery = "SELECT user_id FROM user WHERE email = ?";
                 
                 connection.query(userQuery, [email], (userError, userResults) => {
                     if (userError || userResults.length === 0) {
@@ -204,7 +204,7 @@ app.post('/reVerify', (req, res) => {
                     const UserID = userResults[0].UserID;
                     
                     // Update the user's last login time
-                    const updateLastLoginQuery = "UPDATE user SET last_login_time = NOW() WHERE UserID = ?";
+                    const updateLastLoginQuery = "UPDATE user SET last_login_time = NOW() WHERE user_id = ?";
                     connection.query(updateLastLoginQuery, [UserID], (updateError) => {
                         if (updateError) {
                             console.error('Failed to update last login time:', updateError);
@@ -263,7 +263,7 @@ app.post('/login', (req, res) => {
                     });
                 } else {
                     // Update last login time to current timestamp
-                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = '2024-03-16 22:45:06' WHERE user_id = ?";
+                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = NOW() WHERE user_id = ?";
                     connection.query(updateLastLoginTimeQuery, [user.UserID], (updateError) => {
                         if (updateError) {
                             console.error("Failed to update last login time: ", updateError);
