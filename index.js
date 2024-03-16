@@ -1,4 +1,7 @@
 require('dotenv').config({ path: './.env.local' });
+require('dotenv').config();
+const secretKey = 'yourSecretKey'; 
+
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
@@ -7,17 +10,29 @@ const mysql = require('mysql');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const crypto = require('crypto');
+const sgMail = require('@sendgrid/mail');
+const jwt = require('jsonwebtoken');
+
 app.use(cors());
 
 app.use(bodyParser.json());
-// Database connection settings
+//Database connection settings
 const connection = mysql.createConnection({
   host     : process.env.HOST, 
   user     : process.env.USER, 
   password : process.env.PASSWORD, 
-  database : process.env.DATABASE  
+  database : process.env.DATABASE
 });
-//console.log(process.env.HOST, process.env.USER, process.env.PASSWORD, process.env.DATABASE);
+
+// const connection = mysql.createConnection({
+//   host     : "database-1.cbc8ecmccv9z.us-east-2.rds.amazonaws.com", 
+//   user     : "admin", 
+//   password : "qwert123", 
+//   database : "campusforum"
+// });
+// console.log(process.env.HOST, process.env.USER, process.env.PASSWORD, process.env.DATABASE);
+// console.log(process.env.HOST, process.env.USER, process.env.PASSWORD, process.env.DATABASE);
 
 
 // Connect to the database
@@ -59,6 +74,224 @@ app.post('/data', (req, res) => {
 // Default route for the root of your site
 app.get('/', (req, res) => {
   res.send('Hello World!');
+});
+
+// Set SendGrid API Key
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+
+// New endpoint to handle sending verification code
+app.post('/sendVerification', (req, res) => {
+    const email = req.body.email; // Extract email from request body
+
+    if (!email) {
+        return res.status(400).send({ error: true, message: 'Email is required' });
+    }
+
+    // Generate a new verification code for each request
+    const verificationCode = crypto.randomBytes(3).toString('hex');
+
+    // First, insert the verification code into the database
+    const insertQuery = "INSERT INTO verification_codes (email, verification_code) VALUES (?, ?)";
+    connection.query(insertQuery, [email, verificationCode], (error) => {
+        if (error) {
+            console.error("Failed to insert verification code: ", error);
+            return res.status(500).send({ error: true, message: 'Failed to store verification code' });
+        }
+
+        // If the insert was successful, proceed to send the email
+        const msg = {
+            to: email, // Use the user's email address from the request body
+            from: 'varificationmobile@gmail.com', // Use your verified SendGrid sender email
+            subject: 'Verification Code',
+            text: `Your verification code is: ${verificationCode}`,
+        };
+
+        sgMail.send(msg).then(() => {
+            console.log('Email sent');
+            res.send({ success: true, message: 'Verification code sent successfully.' });
+        }).catch((error) => {
+            console.error(error);
+            res.status(500).send({ error: true, message: 'Failed to send email' });
+        });
+    });
+});
+//Verification code for sign up activity
+app.post('/verifyCode', (req, res) => {
+    const { email, verificationCode } = req.body;
+
+    const query = "SELECT verification_code, created_at FROM verification_codes WHERE email = ? ORDER BY created_at DESC LIMIT 1";
+
+    connection.query(query, [email], (error, results) => {
+        if (error) {
+            console.error('Database query error:', error);
+            return res.status(500).send({ error: true, message: 'Database query failed' });
+        }
+
+        if (results.length > 0) {
+            const { verification_code, created_at } = results[0];
+            const currentTime = new Date();
+            const codeCreationTime = new Date(created_at);
+
+            if ((currentTime - codeCreationTime) / 60000 > 10) {
+                return res.send({ success: false, message: 'Verification code expired' });
+            }
+
+            if (verification_code === verificationCode) {
+                res.send({ success: true, message: 'Verification successful' });
+               
+            } else {
+                res.send({ success: false, message: 'Incorrect verification code' });
+            }
+        } else {
+            res.send({ success: false, message: 'Email not found' });
+        }
+    });
+});
+
+// Sign-up API endpoint
+app.post('/signup', (req, res) => {
+    console.log(req.body); // Logging the incoming request body
+    const { username, email, password } = req.body; // Extract data from request body
+
+    // Basic validation
+    if (!username || !email || !password) {
+        return res.status(400).send({ error: true, message: 'Please provide username, email, and password' });
+    }
+
+    // Assuming UserId is auto-incremented and create_time is set to default to CURRENT_TIMESTAMP
+    const query = "INSERT INTO user (user_name, email, password) VALUES (?, ?, ?)";
+    connection.query(query, [username, email, password], (error, results, fields) => {
+        if (error) {
+            console.error("Failed to insert new user: ", error);
+            return res.status(500).send({ error: true, message: 'Failed to create user' });
+        }
+
+        res.send({ error: false, data: results, message: 'New user has been created successfully.' });
+    });
+});
+
+//Varification code for inactive activity
+app.post('/reVerify', (req, res) => {
+    const { email, verificationCode } = req.body;
+
+    // Retrieve the most recent verification code for the email
+    const verificationQuery = "SELECT verification_code, created_at FROM verification_codes WHERE email = ? ORDER BY created_at DESC LIMIT 1";
+    
+    connection.query(verificationQuery, [email], (verificationError, verificationResults) => {
+        if (verificationError) {
+            console.error('Verification query error:', verificationError);
+            return res.status(500).send({ error: true, message: 'Verification query failed' });
+        }
+
+        if (verificationResults.length > 0) {
+            const { verification_code, created_at } = verificationResults[0];
+            const currentTime = new Date();
+            const codeCreationTime = new Date(created_at);
+
+            // Check if the verification code matches and is not expired
+            if (verification_code === verificationCode ) {
+                
+                // Fetch the user's ID using their email from the user table
+                const userQuery = "SELECT UserID FROM user WHERE email = ?";
+                
+                connection.query(userQuery, [email], (userError, userResults) => {
+                    if (userError || userResults.length === 0) {
+                        console.error('User fetch error:', userError);
+                        return res.status(500).send({ error: true, message: 'Failed to fetch user' });
+                    }
+
+                    const UserID = userResults[0].UserID;
+                    
+                    // Update the user's last login time
+                    const updateLastLoginQuery = "UPDATE user SET last_login_time = NOW() WHERE UserID = ?";
+                    connection.query(updateLastLoginQuery, [UserID], (updateError) => {
+                        if (updateError) {
+                            console.error('Failed to update last login time:', updateError);
+                            return res.status(500).send({ error: true, message: 'Failed to update last login time' });
+                        }
+
+                        // Generate a new JWT token for the user
+                        const token = jwt.sign({ userId: UserID }, secretKey, { expiresIn: '1h' });
+
+                        res.json({
+                            success: true,
+                            message: 'Verification successful. Last login time updated.',
+                            token: token,
+                            userId: UserID
+                        });
+                    });
+                });
+
+            } else {
+                // The verification code is incorrect or expired
+                res.send({ success: false, message: 'Incorrect or expired verification code' });
+            }
+        } else {
+            // No verification code found for the email
+            res.send({ success: false, message: 'No verification code found for this email' });
+        }
+    });
+});
+
+//Login logic
+app.post('/login', (req, res) => {
+    const { username, password, currentTimestamp } = req.body;
+
+    // Updated query to also select the 'email' field
+    const query = "SELECT user_id, password, last_login_time, email FROM user WHERE user_name = ?";
+    connection.query(query, [username], (error, results) => {
+        if (error) {
+            console.error("Login error: ", error);
+            return res.status(500).json({ success: false, message: "Database query error" });
+        }
+
+        if (results.length > 0) {
+            const user = results[0];
+            if (user.password === password) {
+                const lastLoginTimeMillis = new Date(user.last_login_time || 0).getTime();
+                const currentTime = new Date(parseInt(currentTimestamp)).getTime();
+                const diffDays = (currentTime - lastLoginTimeMillis) / (1000 * 60 * 60 * 24);
+
+                if (diffDays > 1) {
+                    // Now that you also have the email from your query, you can send it to the client
+                    // Respond to the client that verification is required and include the email address
+                    
+
+                    return res.json({ 
+                        success: false, 
+                        message: "Verification required. A code has been sent to your email.", 
+                        email: user.email, // Send the fetched email address to the client
+                        
+                        userId: user.UserID 
+                    });
+                } else {
+                    // Update last login time to current timestamp
+                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = NOW() WHERE UserID = ?";
+                    connection.query(updateLastLoginTimeQuery, [user.UserID], (updateError) => {
+                        if (updateError) {
+                            console.error("Failed to update last login time: ", updateError);
+                            return res.status(500).json({ success: false, message: "Failed to update last login time" });
+                        }
+
+                        // Proceed with successful login response
+                        const token = jwt.sign({ userId: user.UserID }, secretKey, { expiresIn: '1h' });
+                        res.json({ 
+                            success: true, 
+                            message: "Login successful", 
+                            token: token, 
+                            userId: user.UserID 
+                        });
+                    });
+                }
+            } else {
+                res.json({ success: false, message: "Password invalid" });
+            }
+        } else {
+            res.json({ success: false, message: "Account does not exist" });
+        }
+    });
 });
 
 // Start the server
