@@ -263,15 +263,15 @@ app.post('/login', (req, res) => {
                     });
                 } else {
                     // Update last login time to current timestamp
-                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = '2024-03-16 22:45:06' WHERE user_id = ?";
-                    connection.query(updateLastLoginTimeQuery, [user.UserID], (updateError) => {
+                    const updateLastLoginTimeQuery = "UPDATE user SET last_login_time = NOW() WHERE user_id = ?";
+                    connection.query(updateLastLoginTimeQuery, [user.user_id], (updateError) => {
                         if (updateError) {
                             console.error("Failed to update last login time: ", updateError);
                             return res.status(500).json({ success: false, message: "Failed to update last login time" });
                         }
 
                         // Proceed with successful login response
-                        const token = jwt.sign({ userId: user.UserID }, secretKey, { expiresIn: '1h' });
+                        const token = jwt.sign({ userId: user.user_id }, secretKey, { expiresIn: '1h' });
                         res.json({ 
                             success: true, 
                             message: "Login successful", 
