@@ -259,7 +259,7 @@ app.post('/login', (req, res) => {
                         message: "Verification required. A code has been sent to your email.", 
                         email: user.email, // Send the fetched email address to the client
                         
-                        userId: user.UserID 
+                        userId: user.user_id 
                     });
                 } else {
                     // Update last login time to current timestamp
@@ -275,7 +275,8 @@ app.post('/login', (req, res) => {
                         res.json({ 
                             success: true, 
                             message: "Login successful", 
-                            userId: user.UserID 
+                            token: token, 
+                            userId: user.user_id 
                         });
                     });
                 }
