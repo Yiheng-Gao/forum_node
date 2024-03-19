@@ -289,6 +289,16 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.get('/category', (req, res) => {
+    const sqlQuery = 'SELECT category_name FROM category'; // Replace with your actual SQL query
+    connection.query(sqlQuery, (error, results, fields) => {
+      if (error) {
+        return res.status(500).json({message: 'Error in database operation'});
+      }
+      res.json(results);
+    });
+  });
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on ${port}`);
