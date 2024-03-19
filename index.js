@@ -276,8 +276,7 @@ app.post('/login', (req, res) => {
                             success: true, 
                             message: "Login successful", 
                             token: token, 
-                            userId: user.user_id,
-                            username: user.user_name
+                            userId: user.user_id 
                         });
                     });
                 }
