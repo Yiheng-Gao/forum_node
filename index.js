@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 // });
 
 const connection = mysql.createPool({
-    connectionLimit: 10, // the maximum number of connections to create at once (adjust as needed)
+    connectionLimit: 20, // the maximum number of connections to create at once (adjust as needed)
     host: process.env.HOST,
     user: process.env.USER,
     password: process.env.PASSWORD,
