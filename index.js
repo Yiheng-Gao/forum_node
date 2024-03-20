@@ -17,12 +17,29 @@ app.use(cors());
 
 app.use(bodyParser.json());
 //Database connection settings
-const connection = mysql.createConnection({
-  host     : process.env.HOST, 
-  user     : process.env.USER, 
-  password : process.env.PASSWORD, 
-  database : process.env.DATABASE
-});
+// const connection = mysql.createConnection({
+//   host     : process.env.HOST, 
+//   user     : process.env.USER, 
+//   password : process.env.PASSWORD, 
+//   database : process.env.DATABASE
+// });
+
+const connection = mysql.createPool({
+    connectionLimit: 10, // the maximum number of connections to create at once (adjust as needed)
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE
+  });
+  
+  connection.on('connection', function (connection) {
+    console.log('DB Connection established');
+  });
+  
+  connection.on('error', function (err) {
+    console.error('DB Connection error', err);
+    process.exit(-1);
+  });
 
 // const connection = mysql.createConnection({
 //   host     : "database-1.cbc8ecmccv9z.us-east-2.rds.amazonaws.com", 
