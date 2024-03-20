@@ -17,22 +17,14 @@ app.use(cors());
 
 app.use(bodyParser.json());
 //Database connection settings
-// const connection = mysql.createConnection({
-//   host     : process.env.HOST, 
-//   user     : process.env.USER, 
-//   password : process.env.PASSWORD, 
-//   database : process.env.DATABASE
-// });
+const connection = mysql.createConnection({
+  host     : process.env.HOST, 
+  user     : process.env.USER, 
+  password : process.env.PASSWORD, 
+  database : process.env.DATABASE
+});
 
-const connection = mysql.createPool({
-    connectionLimit: 20, 
-    host: process.env.HOST,
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE
-  });
 
-  exports.pool=connection;
   
 
 // const connection = mysql.createConnection({
