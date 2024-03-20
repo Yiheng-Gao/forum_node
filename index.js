@@ -321,6 +321,19 @@ app.get('/threadDetailsByCategory', (req, res) => {
     });
 });
 
+app.post('/sendThread',(req,res)=>{
+    const {user_id, category_id, title, thread_content} = req.body;
+
+    const query ="INSERT INTO thread (user_id, category_id, title, thread_content) VALUES (?, ?, ?)";
+    connection.query(query,[user_id, category_id, title, thread_content],(error, result, fields)=>{
+        if (error) {
+            console.error("Failed to insert new thread: ", error);
+            return res.status(500).send({ error: true, message: 'Failed to create thread' });
+        }
+        res.send({error: false, data: results, message: 'New thread created successfully'});
+    })
+});
+
 
 // Start the server
 app.listen(port, () => {
