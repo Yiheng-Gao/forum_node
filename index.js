@@ -350,7 +350,7 @@ app.post('/sendThread',(req,res)=>{
             console.error("Failed to insert new thread: ", error);
             return res.status(500).send({ error: true, message: 'Failed to create thread' });
         }
-        res.send({error: false, data: results, message: 'New thread created successfully'});
+        res.send({error: false, data: result, message: 'New thread created successfully'});
     })
 });
 
