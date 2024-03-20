@@ -290,7 +290,7 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/category', (req, res) => {
-    const sqlQuery = 'SELECT category_name FROM category'; // Replace with your actual SQL query
+    const sqlQuery = 'SELECT category_name FROM category'; 
     connection.query(sqlQuery, (error, results, fields) => {
       if (error) {
         return res.status(500).json({message: 'Error in database operation'});
@@ -298,6 +298,29 @@ app.get('/category', (req, res) => {
       res.json(results);
     });
   });
+
+
+
+app.get('/threadDetailsByCategory', (req, res) => {
+    
+    const categoryId = req.query.category_id;
+
+    if (!categoryId) {
+        return res.status(400).json({message: 'category_id is required'});
+    }
+
+    const sqlQuery = 'SELECT title, user_name, thread_time, thread_id FROM thread_detail WHERE category_id = 1';
+    
+    connection.query(sqlQuery, [categoryId], (error, results) => {
+        if (error) {
+            console.error('Database query error:', error);
+            return res.status(500).json({message: 'Error fetching data from database'});
+        }
+        
+        res.json(results);
+    });
+});
+
 
 // Start the server
 app.listen(port, () => {
