@@ -305,11 +305,11 @@ app.get('/threadDetailsByCategory', (req, res) => {
     
     const categoryId = req.query.category_id;
 
-    // if (!categoryId) {
-    //     return res.status(400).json({message: 'category_id is required'});
-    // }
+    if (!categoryId) {
+        return res.status(400).json({message: 'category_id is required'});
+    }
 
-    const sqlQuery = 'SELECT title, user_name, thread_time, thread_id FROM thread_detail WHERE category_id = 1';
+    const sqlQuery = 'SELECT title, user_name, thread_time, thread_id FROM thread_detail WHERE category_id = ?';
     
     connection.query(sqlQuery, [categoryId], (error, results) => {
         if (error) {
