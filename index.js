@@ -41,6 +41,8 @@ const connection = mysql.createPool({
     process.exit(-1);
   });
 
+  exports.pool = connection;
+
 // const connection = mysql.createConnection({
 //   host     : "database-1.cbc8ecmccv9z.us-east-2.rds.amazonaws.com", 
 //   user     : "admin", 
