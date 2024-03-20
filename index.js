@@ -31,14 +31,8 @@ const connection = mysql.createPool({
     password: process.env.PASSWORD,
     database: process.env.DATABASE
   });
-  
-  connection.connect(err => {
-    if (err) {
-      console.error('An error occurred while connecting to the DB: ', err);
-      return;
-    }
-    console.log('Connection established successfully.');
-  });
+
+  exports.pool=connection;
   
 
 // const connection = mysql.createConnection({
