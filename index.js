@@ -32,16 +32,14 @@ const connection = mysql.createPool({
     database: process.env.DATABASE
   });
   
-  connection.on('connection', function (connection) {
-    console.log('DB Connection established');
+  connection.connect(err => {
+    if (err) {
+      console.error('An error occurred while connecting to the DB: ', err);
+      return;
+    }
+    console.log('Connection established successfully.');
   });
   
-  connection.on('error', function (err) {
-    console.error('DB Connection error', err);
-    process.exit(-1);
-  });
-
-  exports.pool = connection;
 
 // const connection = mysql.createConnection({
 //   host     : "database-1.cbc8ecmccv9z.us-east-2.rds.amazonaws.com", 
