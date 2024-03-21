@@ -385,7 +385,7 @@ app.get('/commentsList', (req, res) => {
         return res.status(400).json({message: 'thread_id is required'});
     }
 
-    const sqlQuery = 'SELECT user_name, user_id, comment_id, comment_content, parent_comment_id, parent_user_name FROM comment_view WHERE thread_id = ?';
+    const sqlQuery = 'SELECT user_name, user_id, comment_id, comment_content, parent_comment_id, parent_user_name, comment_time FROM comment_view WHERE thread_id = ?';
     
     connection.query(sqlQuery, [thread_id], (error, results) => {
         if (error) {
