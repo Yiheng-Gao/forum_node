@@ -341,6 +341,28 @@ app.get('/threadDetailsByCategory', (req, res) => {
     });
 });
 
+
+app.get('/threadDetail', (req, res) => {
+    
+    const thread_id = req.query.thread_id;
+
+    if (!thread_id) {
+        return res.status(400).json({message: 'thread_id is required'});
+    }
+
+    const sqlQuery = 'SELECT title, user_name, thread_time, thread_content FROM thread_detail WHERE thread_id = ?';
+    
+    connection.query(sqlQuery, [thread_id], (error, results) => {
+        if (error) {
+            console.error('Database query error:', error);
+            return res.status(500).json({message: 'Error fetching data from database'});
+        }
+        
+        res.json(results);
+    });
+});
+
+
 app.post('/sendThread',(req,res)=>{
     const {user_id, category_id, title, thread_content} = req.body;
 
