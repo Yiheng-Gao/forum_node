@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 // });
 
 const connection = mysql.createPool({
-    connectionLimit: 20, // the maximum number of connections to create at once (adjust as needed)
+    connectionLimit: 20, 
     host: process.env.HOST,
     user: process.env.USER,
     password: process.env.PASSWORD,
@@ -179,7 +179,7 @@ app.post('/signup', (req, res) => {
         return res.status(400).send({ error: true, message: 'Please provide username, email, and password' });
     }
 
-    // Assuming UserId is auto-incremented and create_time is set to default to CURRENT_TIMESTAMP
+   
     const query = "INSERT INTO user (user_name, email, password) VALUES (?, ?, ?)";
     connection.query(query, [username, email, password], (error, results, fields) => {
         if (error) {
@@ -395,6 +395,19 @@ app.get('/commentsList', (req, res) => {
         
         res.json(results);
     });
+});
+
+app.post('/sendComment',(req,res)=>{
+    const {user_id, thread_id, parent_comment_id, comment_content} = req.body;
+
+    const query ="INSERT INTO comment (user_id, thread_id, parent_comment_id, comment_content) VALUES (?, ?, ?, ?)";
+    connection.query(query,[user_id, thread_id, parent_comment_id, comment_content],(error, result, fields)=>{
+        if (error) {
+            console.error("Failed to insert new comment: ", error);
+            return res.status(500).send({ error: true, message: 'Failed to create comment' });
+        }
+        res.send({error: false, data: result, message: 'New comment created successfully'});
+    })
 });
 
 
