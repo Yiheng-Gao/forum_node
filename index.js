@@ -410,6 +410,27 @@ app.post('/sendComment',(req,res)=>{
     })
 });
 
+app.get('/myThreads', (req, res) => {
+    const userId = req.query.user_id;
+
+    if (!userId) {
+        return res.status(400).send('user_id is required');
+    }
+
+    // Replace the table name and column names according to your database schema
+    const sqlQuery = 'SELECT title, user_name, thread_time, thread_id FROM thread_detail WHERE user_id = ?';
+
+    connection.query(sqlQuery, [userId], (error, results, fields) => {
+        if (error) {
+            console.error('Database query error:', error);
+            return res.status(500).json({message: 'Error fetching data from the database', error: error});
+        }
+
+        // Send the result back to the client
+        res.json(results);
+    });
+});
+
 
 // Start the server
 app.listen(port, () => {
